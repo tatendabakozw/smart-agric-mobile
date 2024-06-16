@@ -3,17 +3,14 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import React, { useContext, useEffect, useState } from "react";
 import tw from "twrnc";
 import { useNavigation } from "@react-navigation/native";
-import { ESP32_IP } from "../../utils/apiUrl";
 import axios from "axios";
 import { data } from "../../utils/data";
 import { Store } from "../../context/Store";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type Props = {};
 
 const TempComponent = (props: Props) => {
   const navigation = useNavigation();
-  const current_temp = 21;
   const { state } = useContext(Store);
   const { ip_address } = state;
 
@@ -36,10 +33,11 @@ const TempComponent = (props: Props) => {
 
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 2000); // Fetch data every 5 seconds
+    const interval = setInterval(fetchData, 5000); // Fetch data every 5 seconds
     return () => clearInterval(interval);
   }, []);
-  // console.log(`http://${JSON.parse(ip_address).ip_address}/data`);
+
+  const current_temp = sensorData?.temperature || 21;
 
   return (
     <TouchableOpacity
@@ -72,9 +70,7 @@ const TempComponent = (props: Props) => {
         )}
       </View>
       <Text style={tw`text-3xl font-semibold text-gray-800 pb-2 text-center`}>
-        {" "}
-        {sensorData?.temperature ? sensorData?.temperature * 100 : current_temp}
-        &#8451;
+        {sensorData?.temperature ? sensorData.temperature : current_temp}&#8451;
       </Text>
       <View style={tw`border-t border-gray-300 flex-1 pb-2`} />
       <Text style={tw`text-center text-lg text-red-700`}>Info</Text>

@@ -1,18 +1,19 @@
-import { createContext, useReducer } from "react";
+import React, { createContext, useReducer, useEffect } from "react";
 import asyncstorage from "../utils/asyncstorage";
 
+// Initial state
 const initialState = {
   darkMode: false,
-  ip_address: asyncstorage.getItem("ip_address")
-    ? asyncstorage.getItem("ip_address")
-    : null,
+  ip_address: null,
   signed_in: true,
   search_query: "",
 };
 
+// Create context
 export const Store = createContext();
 
-function reducer(state = { search_category: "" }, action) {
+// Reducer function
+function reducer(state, action) {
   switch (action.type) {
     case "DARK_MODE_ON":
       return { ...state, darkMode: true };
@@ -33,8 +34,22 @@ function reducer(state = { search_category: "" }, action) {
   }
 }
 
+// Store provider component
 export function StoreProvider(props) {
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  // Load initial IP address from async storage
+  useEffect(() => {
+    const loadIpAddress = async () => {
+      const storedIpAddress = await asyncstorage.getItem("ip_address");
+      if (storedIpAddress) {
+        dispatch({ type: "SETUP_IP", payload: storedIpAddress });
+      }
+    };
+    loadIpAddress();
+  }, []);
+
   const value = { state, dispatch };
+
   return <Store.Provider value={value}>{props.children}</Store.Provider>;
 }
