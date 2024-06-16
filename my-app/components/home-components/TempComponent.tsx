@@ -40,6 +40,14 @@ const TempComponent = (props: Props) => {
     }
   };
 
+  function makePositive(number: number) {
+    if (number < 0) {
+      return -number;
+    } else {
+      return number;
+    }
+  }
+
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 5000); // Fetch data every 5 seconds
@@ -73,7 +81,10 @@ const TempComponent = (props: Props) => {
         )}
       </View>
       <Text style={styles.temperature}>
-        {sensorData?.temperature ? sensorData.temperature : current_temp}&#8451;
+        {sensorData?.temperature
+          ? makePositive(sensorData.temperature) * 100
+          : current_temp}
+        &#8451;
       </Text>
       <View style={styles.separator} />
       <Text style={styles.infoText}>Info</Text>
