@@ -24,7 +24,7 @@ const HomeScreen = (props: Props) => {
           </Text>
           <TempComponent />
           <HumidityComponent />
-          <LightComponent />
+          {/* <LightComponent /> */}
         </ScrollView>
       </View>
     </GeneralLayout>

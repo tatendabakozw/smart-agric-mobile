@@ -20,14 +20,23 @@ const TempComponent = (props: Props) => {
     temperature: 0,
   });
 
+  const [error, setError] = useState<string | null>(null);
+
   const fetchData = async () => {
+    if (!ip_address) {
+      setError("IP address not set. Please configure the IP address.");
+      return;
+    }
     try {
       const response = await axios.get(
         `http://${JSON.parse(ip_address).ip_address}/data`
       );
       setSensorData(response.data);
+      setError(null);
+      console.log(response.data);
     } catch (error) {
       console.error("Error fetching data from ESP32:", error);
+      setError("Failed to fetch data. Please try again.");
     }
   };
 
@@ -35,7 +44,7 @@ const TempComponent = (props: Props) => {
     fetchData();
     const interval = setInterval(fetchData, 5000); // Fetch data every 5 seconds
     return () => clearInterval(interval);
-  }, []);
+  }, [ip_address]);
 
   const current_temp = sensorData?.temperature || 21;
 
@@ -44,40 +53,47 @@ const TempComponent = (props: Props) => {
       activeOpacity={0.7}
       // @ts-ignore
       onPress={() => navigation.navigate("temperature")}
-      style={tw`flex flex-col bg-white rounded-xl p-4 mb-2`}
+      style={styles.container}
     >
-      <View style={tw`flex flex-row items-center justify-between`}>
-        <View style={tw`flex flex-col`}>
-          <View style={tw`flex flex-row bg-green-700 p-2 rounded-full`}>
-            <MaterialCommunityIcons
-              name="coolant-temperature"
-              size={24}
-              color="white"
-            />
-          </View>
-          <Text style={tw`text-xl text-gray-500 py-4`}>Temp</Text>
+      <View style={styles.header}>
+        <View style={styles.iconContainer}>
+          <MaterialCommunityIcons
+            name="coolant-temperature"
+            size={24}
+            color="white"
+          />
         </View>
+        <Text style={styles.title}>Temp</Text>
         {current_temp > data.OPTIMAL_TEMP + data.ERROR_MARGIN ? (
-          <Text style={tw`text-lg font-semibold text-red-700`}>
-            Above Required
-          </Text>
+          <Text style={styles.statusAbove}>Above Required</Text>
         ) : current_temp < data.OPTIMAL_TEMP - data.ERROR_MARGIN ? (
-          <Text style={tw`text-lg font-semibold text-blue-700`}>
-            Below Required
-          </Text>
+          <Text style={styles.statusBelow}>Below Required</Text>
         ) : (
-          <Text style={tw`text-lg font-semibold text-green-700`}>Optimal</Text>
+          <Text style={styles.statusOptimal}>Optimal</Text>
         )}
       </View>
-      <Text style={tw`text-3xl font-semibold text-gray-800 pb-2 text-center`}>
+      <Text style={styles.temperature}>
         {sensorData?.temperature ? sensorData.temperature : current_temp}&#8451;
       </Text>
-      <View style={tw`border-t border-gray-300 flex-1 pb-2`} />
-      <Text style={tw`text-center text-lg text-red-700`}>Info</Text>
+      <View style={styles.separator} />
+      <Text style={styles.infoText}>Info</Text>
+      {error && <Text style={styles.errorText}>{error}</Text>}
     </TouchableOpacity>
   );
 };
 
-export default TempComponent;
+const styles = StyleSheet.create({
+  container: tw`flex flex-col bg-white rounded-xl p-4 mb-2`,
+  header: tw`flex flex-row items-center justify-between`,
+  iconContainer: tw`flex flex-row bg-green-700 p-2 rounded-full`,
+  title: tw`text-xl text-gray-500 py-4`,
+  statusAbove: tw`text-lg font-semibold text-red-700`,
+  statusBelow: tw`text-lg font-semibold text-blue-700`,
+  statusOptimal: tw`text-lg font-semibold text-green-700`,
+  temperature: tw`text-3xl font-semibold text-gray-800 pb-2 text-center`,
+  separator: tw`border-t border-gray-300 flex-1 pb-2`,
+  infoText: tw`text-center text-lg text-red-700`,
+  errorText: tw`text-center text-lg text-red-500 mt-2`,
+});
 
-const styles = StyleSheet.create({});
+export default TempComponent;
